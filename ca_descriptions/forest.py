@@ -4,6 +4,7 @@
 # --- Set up executable path, do not edit ---
 import sys
 import inspect
+#import numpy as np
 this_file_loc = (inspect.stack()[0][1])
 main_dir_loc = this_file_loc[:this_file_loc.index('ca_descriptions')]
 sys.path.append(main_dir_loc)
@@ -23,14 +24,16 @@ def setup(args):
     # -- THE CA MUST BE RELOADED IN THE GUI IF ANY OF THE BELOW ARE CHANGED --
     config.title = "Fire spread CA"
     config.dimensions = 2
-    config.states = (0, 1, 2, 3)
+    config.states = (0, 1, 2, 3, 4, 5,6)
     # -------------------------------------------------------------------------
 
     # ---- Override the defaults below (these may be changed at anytime) ----
 
-    config.state_colors = [(0,0,0),(1,0,0),(0,1,0),(0,0,1)]
+    config.state_colors = [(0,0,0),(1,0,0),(0,1,0),(0,0,1), (0.4,0,0),(0,0.4,0),(0,0,0.4)]
     config.grid_dims = (50,50)
-
+	#config.initial_grid = np.zeros(config.grid_dims)
+	#config.inital_grid[1,1] = 1
+	
     # ----------------------------------------------------------------------
 
     # the GUI calls this to pass the user defined config
