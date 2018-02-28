@@ -14,6 +14,7 @@ sys.path.append(main_dir_loc + 'capyle/guicomponents')
 
 from capyle.ca import Grid2D, Neighbourhood, randomise2d
 import capyle.utils as utils
+import numpy as np
 
 
 def setup(args):
