@@ -19,6 +19,7 @@ import numpy as np
 import random
 
 
+
 def setup(args):
     """Set up the config object used to interact with the GUI"""
     config_path = args[0]
@@ -41,7 +42,7 @@ def setup(args):
 
     # ---- Override the defaults below (these may be changed at anytime) ----
 
-    config.state_colors = [(0.5,0.9,0.1),(0,0,1),(0.4,0.4,0.4), (0.4,0.6,0.37),(0,0,0), (1,0,0),(0.4,0,0)]
+    config.state_colors = [(0.5,0.9,0.1),(0,0,1),(0.4,0.4,0.4), (0.4,0.6,0.37),(1,1,1), (1,0,0),(0,0,0)]
     config.grid_dims = (50,50)
     config.initial_grid = np.zeros(config.grid_dims)
     config.initial_grid[5:8,5:8] = 5
@@ -87,6 +88,7 @@ def transition_function(grid, neighbourstates, neighbourcounts, decaygrid):
     two_5_neighbours = (neighbourcounts[5] >= 2)
     four_5_neighbours = (neighbourcounts[5] >= 4)
 
+    # Random probability
     half_prob = decision(0.5)
     quarter_prob = decision(0.25)
     tenth_prob = decision(0.1)
@@ -98,12 +100,11 @@ def transition_function(grid, neighbourstates, neighbourcounts, decaygrid):
     two_to_five = (cell_in_state_2 & ((one_5_neighbour & quarter_prob) | (two_5_neighbours & threequarter_prob)))
     three_to_five = (cell_in_state_3 & ((three_5_neighbours & tenth_prob) | (four_5_neighbours & quarter_prob)))
 
-
     # Minus one from burning cell count until it reaches 0
     decaygrid[cell_in_state_5] -= 1
     decayed_to_zero = (decaygrid == 0)
 
-    grid[decayed_to_zero] = 6
+    grid[decayed_to_zero & cell_in_state_5] = 6
     grid[zero_to_5 | two_to_five | three_to_five] = 5
 
     return grid
@@ -116,13 +117,22 @@ def main():
 
     decaygrid = np.zeros(config.grid_dims)
 
-    decaygrid.fill(6)
+    decaygrid.fill(8)
 
-    decaygrid[5:35, 32:35] = 5
+    decaygrid[5:35, 32:35] = 6
     decaygrid[30:41, 15:25] = 50
 
+    # Set up fuel probability for each cell
+    fuelgrid = np.random.random(config.grid_dims)
+
+    # Multiply fuel probality with decay constant
+    fuel_prob_grid = np.multiply(decaygrid, fuelgrid)
+    fuel_prob_grid = np.round(fuel_prob_grid, 0)
+
+    print(fuel_prob_grid)
+
     # Create grid object using parameters from config + transition function
-    grid = Grid2D(config, (transition_function, decaygrid))
+    grid = Grid2D(config, (transition_function, fuel_prob_grid))
 
     # Run the CA, save grid state every generation to line
     timeline = grid.run()
