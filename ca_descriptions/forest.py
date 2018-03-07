@@ -16,6 +16,7 @@ sys.path.append(main_dir_loc + 'capyle/guicomponents')
 from capyle.ca import Grid2D, Neighbourhood, randomise2d
 import capyle.utils as utils
 import numpy as np
+import random
 
 
 def setup(args):
@@ -64,8 +65,11 @@ def setup(args):
         sys.exit()
     return config
 
+def decision(probability):
+    return random.random() < probability
 
-def transition_function(grid, neighbourstates, neighbourcounts, decaygrid, flamgrid):
+
+def transition_function(grid, neighbourstates, neighbourcounts, decaygrid):
     """Function to apply the transition rules
     and return the new grid"""
 
@@ -80,16 +84,19 @@ def transition_function(grid, neighbourstates, neighbourcounts, decaygrid, flamg
     # Find neighbours to these cells
     three_5_neighbours = (neighbourcounts[5] >= 3)
     one_5_neighbour = (neighbourcounts[5] >= 1)
+    two_5_neighbours = (neighbourcounts[5] >= 2)
     four_5_neighbours = (neighbourcounts[5] >= 4)
 
-
-    flamgrid[one_5_neighbour] -= 1
-    #flamgrid[(not three_5_neighbours)] += 1
-    toBeFire = (flamgrid == 0)
+    half_prob = decision(0.5)
+    quarter_prob = decision(0.25)
+    tenth_prob = decision(0.1)
+    threequarter_prob = decision(0.75)
+    ninetenth_prob = decision(0.9)
 
     # Make them Burn!!!
-    to_5 = (cell_in_state_0 & three_5_neighbours & toBeFire) # | (cell_in_state_2 & one_5_neighbour) | (cell_in_state_3 & four_5_neighbours)
-
+    zero_to_5 = (cell_in_state_0 & ((one_5_neighbour & tenth_prob) | (three_5_neighbours & half_prob) | (four_5_neighbours & threequarter_prob)))
+    two_to_five = (cell_in_state_2 & ((one_5_neighbour & quarter_prob) | (two_5_neighbours & threequarter_prob)))
+    three_to_five = (cell_in_state_3 & ((three_5_neighbours & tenth_prob) | (four_5_neighbours & quarter_prob)))
 
 
     # Minus one from burning cell count until it reaches 0
@@ -97,7 +104,7 @@ def transition_function(grid, neighbourstates, neighbourcounts, decaygrid, flamg
     decayed_to_zero = (decaygrid == 0)
 
     grid[decayed_to_zero] = 6
-    grid[to_5] = 5
+    grid[zero_to_5 | two_to_five | three_to_five] = 5
 
     return grid
 
@@ -109,16 +116,13 @@ def main():
 
     decaygrid = np.zeros(config.grid_dims)
 
-    decaygrid.fill(15)
+    decaygrid.fill(6)
 
-    decaygrid[5:35, 32:35] = 1
-    decaygrid[30:41, 15:25] = 10
-
-    flamgrid = np.zeros(config.grid_dims)
-    flamgrid.fill(3)
+    decaygrid[5:35, 32:35] = 5
+    decaygrid[30:41, 15:25] = 50
 
     # Create grid object using parameters from config + transition function
-    grid = Grid2D(config, (transition_function, decaygrid, flamgrid))
+    grid = Grid2D(config, (transition_function, decaygrid))
 
     # Run the CA, save grid state every generation to line
     timeline = grid.run()
