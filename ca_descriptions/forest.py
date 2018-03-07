@@ -65,7 +65,7 @@ def setup(args):
     return config
 
 
-def transition_function(grid, neighbourstates, neighbourcounts, decaygrid):
+def transition_function(grid, neighbourstates, neighbourcounts, decaygrid, flamgrid):
     """Function to apply the transition rules
     and return the new grid"""
 
@@ -74,16 +74,23 @@ def transition_function(grid, neighbourstates, neighbourcounts, decaygrid):
     cell_in_state_2 = (grid == 2)
     cell_in_state_3 = (grid == 3)
 
+    # Decay
+    cell_in_state_5 = (grid == 5)
+
     # Find neighbours to these cells
     three_5_neighbours = (neighbourcounts[5] >= 3)
     one_5_neighbour = (neighbourcounts[5] >= 1)
     four_5_neighbours = (neighbourcounts[5] >= 4)
 
-    # Make them Burn!!!
-    to_5 = (cell_in_state_0 & three_5_neighbours) | (cell_in_state_2 & one_5_neighbour) | (cell_in_state_3 & four_5_neighbours)
 
-    # Decay
-    cell_in_state_5 = (grid == 5)
+    flamgrid[one_5_neighbour] -= 1
+    #flamgrid[(not three_5_neighbours)] += 1
+    toBeFire = (flamgrid == 0)
+
+    # Make them Burn!!!
+    to_5 = (cell_in_state_0 & three_5_neighbours & toBeFire) # | (cell_in_state_2 & one_5_neighbour) | (cell_in_state_3 & four_5_neighbours)
+
+
 
     # Minus one from burning cell count until it reaches 0
     decaygrid[cell_in_state_5] -= 1
@@ -102,15 +109,16 @@ def main():
 
     decaygrid = np.zeros(config.grid_dims)
 
-    decaygrid.fill(5)
+    decaygrid.fill(15)
 
     decaygrid[5:35, 32:35] = 1
     decaygrid[30:41, 15:25] = 10
 
-
+    flamgrid = np.zeros(config.grid_dims)
+    flamgrid.fill(3)
 
     # Create grid object using parameters from config + transition function
-    grid = Grid2D(config, (transition_function, decaygrid))
+    grid = Grid2D(config, (transition_function, decaygrid, flamgrid))
 
     # Run the CA, save grid state every generation to line
     timeline = grid.run()
