@@ -102,7 +102,7 @@ def transition_function(grid, neighbourstates, neighbourcounts, decaygrid):
 
     # Minus one from burning cell count until it reaches 0
     decaygrid[cell_in_state_5] -= 1
-    decayed_to_zero = (decaygrid == 0)
+    decayed_to_zero = (decaygrid <= 0)
 
     grid[decayed_to_zero & cell_in_state_5] = 6
     grid[zero_to_5 | two_to_five | three_to_five] = 5
@@ -117,10 +117,10 @@ def main():
 
     decaygrid = np.zeros(config.grid_dims)
 
-    decaygrid.fill(8)
+    decaygrid.fill(20)
 
     decaygrid[5:35, 32:35] = 6
-    decaygrid[30:41, 15:25] = 50
+    decaygrid[30:41, 15:25] = 100
 
     # Set up fuel probability for each cell
     fuelgrid = np.random.random(config.grid_dims)
