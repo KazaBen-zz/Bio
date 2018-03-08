@@ -88,17 +88,11 @@ def transition_function(grid, neighbourstates, neighbourcounts, decaygrid):
     two_5_neighbours = (neighbourcounts[5] >= 2)
     four_5_neighbours = (neighbourcounts[5] >= 4)
 
-    # Random probability
-    half_prob = decision(0.5)
-    quarter_prob = decision(0.25)
-    tenth_prob = decision(0.1)
-    threequarter_prob = decision(0.75)
-    ninetenth_prob = decision(0.9)
 
     # Make them Burn!!!
-    zero_to_5 = (cell_in_state_0 & ((one_5_neighbour & tenth_prob) | (three_5_neighbours & half_prob) | (four_5_neighbours & threequarter_prob)))
-    two_to_five = (cell_in_state_2 & ((one_5_neighbour & quarter_prob) | (two_5_neighbours & threequarter_prob)))
-    three_to_five = (cell_in_state_3 & ((three_5_neighbours & tenth_prob) | (four_5_neighbours & quarter_prob)))
+    zero_to_5 = (cell_in_state_0 & ((one_5_neighbour & decision(0.1)) | (three_5_neighbours & decision(0.5)) | (four_5_neighbours & decision(0.75))))
+    two_to_five = (cell_in_state_2 & ((one_5_neighbour & decision(0.25)) | (two_5_neighbours & decision(0.75))))
+    three_to_five = (cell_in_state_3 & ((three_5_neighbours & decision(0.1)) | (four_5_neighbours & decision(0.25))))
 
     # Minus one from burning cell count until it reaches 0
     decaygrid[cell_in_state_5] -= 1
@@ -128,8 +122,6 @@ def main():
     # Multiply fuel probality with decay constant
     fuel_prob_grid = np.multiply(decaygrid, fuelgrid)
     fuel_prob_grid = np.round(fuel_prob_grid, 0)
-
-    print(fuel_prob_grid)
 
     # Create grid object using parameters from config + transition function
     grid = Grid2D(config, (transition_function, fuel_prob_grid))
