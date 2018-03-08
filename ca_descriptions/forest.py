@@ -18,6 +18,8 @@ import capyle.utils as utils
 import numpy as np
 import random
 
+# Coeficiant to increase grid, generation size
+coef = 2
 
 
 def setup(args):
@@ -41,17 +43,16 @@ def setup(args):
     # -------------------------------------------------------------------------
 
     # ---- Override the defaults below (these may be changed at anytime) ----
-
     config.state_colors = [(0.5,0.9,0.1),(0,0,1),(0.4,0.4,0.4), (0.4,0.6,0.37),(1,1,1), (1,0,0),(0,0,0)]
-    config.grid_dims = (50,50)
+    config.grid_dims = (50*coef,50*coef)
     config.initial_grid = np.zeros(config.grid_dims)
-    config.initial_grid[5:8,5:8] = 5
-    config.initial_grid[10:15, 5:15] = 1
-    config.initial_grid[5:35, 32:35] = 2
-    config.initial_grid[30:41, 15:25] = 3
-    config.initial_grid[48:50, :3] = 4
+    config.initial_grid[5*coef:8*coef,5*coef:8*coef] = 5
+    config.initial_grid[10*coef:15*coef, 5*coef:15*coef] = 1
+    config.initial_grid[5*coef:35*coef, 32*coef:35*coef] = 2
+    config.initial_grid[30*coef:41*coef, 15*coef:25*coef] = 3
+    config.initial_grid[48*coef:50*coef, :3*coef] = 4
     config.wrap = False
-
+    config.num_generations = 200 * coef
 	#set_grid_dims(dims = (200, 200))
     #set_initial_grid(grid)
 	#config.inital_grid[1,1] = 1
@@ -88,11 +89,13 @@ def transition_function(grid, neighbourstates, neighbourcounts, decaygrid):
     two_5_neighbours = (neighbourcounts[5] >= 2)
     four_5_neighbours = (neighbourcounts[5] >= 4)
 
-
-    # Make them Burn!!!
-    zero_to_5 = (cell_in_state_0 & ((one_5_neighbour & decision(0.1)) | (three_5_neighbours & decision(0.5)) | (four_5_neighbours & decision(0.75))))
-    two_to_five = (cell_in_state_2 & ((one_5_neighbour & decision(0.25)) | (two_5_neighbours & decision(0.75))))
-    three_to_five = (cell_in_state_3 & ((three_5_neighbours & decision(0.1)) | (four_5_neighbours & decision(0.25))))
+       # Make them Burn!!!
+    #Background
+    zero_to_5 = (cell_in_state_0 & ((one_5_neighbour & decision(0.1)) | (two_5_neighbours & decision(0.2)) | (three_5_neighbours & decision(0.25)) | (four_5_neighbours & decision(0.5))))
+    #Canyon
+    two_to_five = (cell_in_state_2 & ((one_5_neighbour & decision(0.3)) | (two_5_neighbours & decision(0.5)) | (three_5_neighbours & decision(0.6)| (four_5_neighbours) & decision(0.9))))
+    #Forest
+    three_to_five = (cell_in_state_3 & ((one_5_neighbour & decision(0.03)) | (two_5_neighbours & decision(0.07)) | (three_5_neighbours & decision(0.1)) | (four_5_neighbours & decision(0.15))))
 
     # Minus one from burning cell count until it reaches 0
     decaygrid[cell_in_state_5] -= 1
@@ -111,10 +114,10 @@ def main():
 
     decaygrid = np.zeros(config.grid_dims)
 
-    decaygrid.fill(20)
+    decaygrid.fill(72)
 
-    decaygrid[5:35, 32:35] = 6
-    decaygrid[30:41, 15:25] = 100
+    decaygrid[5*coef:35*coef, 32*coef:35*coef] = 4
+    decaygrid[30*coef:41*coef, 15*coef:25*coef] = 300
 
     # Set up fuel probability for each cell
     fuelgrid = np.random.random(config.grid_dims)
@@ -122,6 +125,8 @@ def main():
     # Multiply fuel probality with decay constant
     fuel_prob_grid = np.multiply(decaygrid, fuelgrid)
     fuel_prob_grid = np.round(fuel_prob_grid, 0)
+
+    print(fuel_prob_grid)
 
     # Create grid object using parameters from config + transition function
     grid = Grid2D(config, (transition_function, fuel_prob_grid))
