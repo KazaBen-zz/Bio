@@ -44,15 +44,15 @@ def setup(args):
 
     # ---- Override the defaults below (these may be changed at anytime) ----
     config.state_colors = [(0.5,0.9,0.1),(0,0,1),(0.4,0.4,0.4), (0.4,0.6,0.37),(1,1,1), (1,0,0),(0,0,0)]
-    config.grid_dims = (50*coef,50*coef)
+    config.grid_dims = (100*coef,100*coef)
     config.initial_grid = np.zeros(config.grid_dims)
-    config.initial_grid[5*coef:8*coef,5*coef:8*coef] = 5
-    config.initial_grid[10*coef:15*coef, 5*coef:15*coef] = 1
-    config.initial_grid[5*coef:35*coef, 32*coef:35*coef] = 2
-    config.initial_grid[30*coef:41*coef, 15*coef:25*coef] = 3
-    config.initial_grid[48*coef:50*coef, :3*coef] = 4
+    config.initial_grid[10*coef:16*coef,10*coef:16*coef] = 5
+    config.initial_grid[20*coef:30*coef, 10*coef:30*coef] = 1
+    config.initial_grid[10*coef:70*coef, 64*coef:70*coef] = 2
+    config.initial_grid[60*coef:82*coef, 30*coef:50*coef] = 3
+    config.initial_grid[96*coef:100*coef, :6*coef] = 4
     config.wrap = False
-    config.num_generations = 200 * coef
+    config.num_generations = 400 * coef
 	#set_grid_dims(dims = (200, 200))
     #set_initial_grid(grid)
 	#config.inital_grid[1,1] = 1
