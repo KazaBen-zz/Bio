@@ -19,7 +19,7 @@ import numpy as np
 import random
 
 # Coeficiant to increase grid, generation size
-coef = 2
+coef = 1
 
 
 def setup(args):
@@ -75,6 +75,29 @@ def transition_function(grid, neighbourstates, neighbourcounts, decaygrid):
     """Function to apply the transition rules
     and return the new grid"""
 
+    #Implementation of wind
+    wind_direction = "west"
+    NW, N, NE, W, E, SW, S, SE = neighbourstates
+
+
+    if wind_direction == "north":
+        state1 = NW
+        state2 = N
+        state3 = NE
+    elif wind_direction == "east":
+        state1 = SE
+        state2 = E
+        state3 = NE
+    elif wind_direction == "south":
+        state1 = SW
+        state2 = S
+        state3 = SE
+    elif wind_direction == "west":
+        state1 = NW
+        state2 = W
+        state3 = SW
+
+
     # Find cells in certain states
     cell_in_state_0 = (grid == 0)
     cell_in_state_2 = (grid == 2)
@@ -89,13 +112,15 @@ def transition_function(grid, neighbourstates, neighbourcounts, decaygrid):
     two_5_neighbours = (neighbourcounts[5] >= 2)
     four_5_neighbours = (neighbourcounts[5] >= 4)
 
+    wind_in_action = (state2 == 5 )
+
        # Make them Burn!!!
     #Background
-    zero_to_5 = (cell_in_state_0 & ((one_5_neighbour & decision(0.1)) | (two_5_neighbours & decision(0.2)) | (three_5_neighbours & decision(0.25)) | (four_5_neighbours & decision(0.5))))
+    zero_to_5 = (cell_in_state_0 & (((one_5_neighbour & decision(0.1)) | (two_5_neighbours & decision(0.2)) | (three_5_neighbours & decision(0.25)) | (four_5_neighbours & decision(0.5))) | wind_in_action))
     #Canyon
-    two_to_five = (cell_in_state_2 & ((one_5_neighbour & decision(0.3)) | (two_5_neighbours & decision(0.5)) | (three_5_neighbours & decision(0.6)| (four_5_neighbours) & decision(0.9))))
+    two_to_five = (cell_in_state_2 & (((one_5_neighbour & decision(0.3)) | (two_5_neighbours & decision(0.5)) | (three_5_neighbours & decision(0.6)| (four_5_neighbours) & decision(0.9))) | wind_in_action))
     #Forest
-    three_to_five = (cell_in_state_3 & ((one_5_neighbour & decision(0.03)) | (two_5_neighbours & decision(0.07)) | (three_5_neighbours & decision(0.1)) | (four_5_neighbours & decision(0.15))))
+    three_to_five = (cell_in_state_3 & (((one_5_neighbour & decision(0.03)) | (two_5_neighbours & decision(0.07)) | (three_5_neighbours & decision(0.1)) | (four_5_neighbours & decision(0.15))) | wind_in_action))
 
     # Minus one from burning cell count until it reaches 0
     decaygrid[cell_in_state_5] -= 1
