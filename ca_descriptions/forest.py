@@ -19,7 +19,7 @@ import numpy as np
 import random
 
 # Coeficiant to increase grid, generation size
-coef = 1
+coef = 2
 
 
 def setup(args):
@@ -76,7 +76,7 @@ def transition_function(grid, neighbourstates, neighbourcounts, decaygrid):
     and return the new grid"""
 
     #Implementation of wind
-    wind_direction = "west"
+    wind_direction = "north"
     NW, N, NE, W, E, SW, S, SE = neighbourstates
 
 
@@ -112,21 +112,21 @@ def transition_function(grid, neighbourstates, neighbourcounts, decaygrid):
     two_5_neighbours = (neighbourcounts[5] >= 2)
     four_5_neighbours = (neighbourcounts[5] >= 4)
 
-    wind_in_action = (state2 == 5 )
+    wind_in_action = ((state2 == 5) | (state1 == 5) | (state3 == 5) )
 
        # Make them Burn!!!
     #Background
-    zero_to_5 = (cell_in_state_0 & (((one_5_neighbour & decision(0.1)) | (two_5_neighbours & decision(0.2)) | (three_5_neighbours & decision(0.25)) | (four_5_neighbours & decision(0.5))) | wind_in_action))
+    zero_to_5 = (cell_in_state_0 & ((one_5_neighbour & decision(0.2)) | (two_5_neighbours & decision(0.4)) | (three_5_neighbours & decision(0.6)) | (wind_in_action & decision(0.6))))
     #Canyon
-    two_to_five = (cell_in_state_2 & (((one_5_neighbour & decision(0.3)) | (two_5_neighbours & decision(0.5)) | (three_5_neighbours & decision(0.6)| (four_5_neighbours) & decision(0.9))) | wind_in_action))
+    two_to_five = (cell_in_state_2 & ((one_5_neighbour & decision(0.3)) | (two_5_neighbours & decision(0.6)) | (three_5_neighbours & decision(0.9)) | wind_in_action))
     #Forest
-    three_to_five = (cell_in_state_3 & (((one_5_neighbour & decision(0.03)) | (two_5_neighbours & decision(0.07)) | (three_5_neighbours & decision(0.1)) | (four_5_neighbours & decision(0.15))) | wind_in_action))
+    three_to_five = (cell_in_state_3 & ((one_5_neighbour & decision(0.05)) | (two_5_neighbours & decision(0.1)) | (three_5_neighbours & decision(0.15)) | (wind_in_action & decision(0.2))))
 
     # Minus one from burning cell count until it reaches 0
     decaygrid[cell_in_state_5] -= 1
-    decayed_to_zero = (decaygrid <= 0)
+    decayed_to_zero = (decaygrid <= 0) 
 
-    grid[decayed_to_zero & cell_in_state_5] = 6
+    grid[decayed_to_zero & cell_in_state_5 ] = 6
     grid[zero_to_5 | two_to_five | three_to_five] = 5
 
     return grid
@@ -139,10 +139,10 @@ def main():
 
     decaygrid = np.zeros(config.grid_dims)
 
-    decaygrid.fill(72)
+    decaygrid.fill(20 / (coef*coef))
 
-    decaygrid[5*coef:35*coef, 32*coef:35*coef] = 4
-    decaygrid[30*coef:41*coef, 15*coef:25*coef] = 300
+    decaygrid[5*coef:35*coef, 32*coef:35*coef] = (4/(coef*coef))
+    decaygrid[30*coef:41*coef, 15*coef:25*coef] = (300/(coef*coef))
 
     # Set up fuel probability for each cell
     fuelgrid = np.random.random(config.grid_dims)
